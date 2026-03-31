@@ -3,11 +3,10 @@ const categoryMap: Record<number, string> = {
     2: 'Бары',
     3: 'Культура',
     4: 'Шоппинг',
-    5: 'Работа',
+    5: 'Коворки',
     6: 'Прогулки',
     7: 'Развлечения',
     8: 'Ночная жизнь',
-    9: 'Ко-ворки',
 }
 
 type Place = {
@@ -25,6 +24,12 @@ type PlaceCardProps = {
     onCopy: () => void
 }
 
+function truncateText(text: string, maxLength: number) {
+    if (!text) return ''
+    if (text.length <= maxLength) return text
+    return text.slice(0, maxLength).trimEnd() + '...'
+}
+
 function PlaceCard({ place, onCopy }: PlaceCardProps) {
 
     const handleCopy = async () => {
@@ -37,7 +42,7 @@ function PlaceCard({ place, onCopy }: PlaceCardProps) {
             style={{
                 width: '100%',
                 maxWidth: 400,
-                margin: '16px auto',
+                margin: '0 auto',
                 borderRadius: 20,
                 overflow: 'hidden',
                 position: 'relative',
@@ -170,7 +175,7 @@ function PlaceCard({ place, onCopy }: PlaceCardProps) {
                         lineHeight: 1.3,
                     }}
                 >
-                    {place.description}
+                    {truncateText(place.description, 90)}
                 </p>
             </div>
         </div>

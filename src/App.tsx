@@ -4,8 +4,9 @@ import { vibes } from './constants/vibes'
 import { categories } from './constants/categories'
 import PlaceCard from './components/PlaceCard'
 import SlotSpinner from './components/SlotSpinner'
-import { shuffleArray } from './utils/shuffleArray'
 import logo from './assets/logo.svg'
+
+const screenBackground = 'linear-gradient(180deg, #FFFFFF 0%, #F6F6F6 100%)'
 
 function App() {
   function getOrCreateUID() {
@@ -30,10 +31,9 @@ function App() {
   const [spinErrorMessage, setSpinErrorMessage] = useState('')
   const [uid, setUid] = useState<string | null>(null)
 
-  async function loadPlaces() {
+  async function getPlacesForSpin() {
     if (!selectedVibe || selectedCategories.length !== 3) {
-      setPlaces([])
-      return
+      return null
     }
 
     setIsLoading(true)
@@ -46,30 +46,39 @@ function App() {
 
     if (error) {
       console.error(error)
-      setPlaces([])
       setIsLoading(false)
-      return
+      return null
     }
 
-    const shuffled = shuffleArray(data || [])
-    setPlaces(shuffled.slice(0, 3))
+    const allPlaces = data || []
+    const resultPlaces = []
+
+    for (const categoryId of selectedCategories) {
+      const categoryPlaces = allPlaces.filter(
+        (place) => place.category === categoryId
+      )
+
+      if (categoryPlaces.length === 0) {
+        setIsLoading(false)
+        return null
+      }
+
+      const randomIndex = Math.floor(Math.random() * categoryPlaces.length)
+      const pickedPlace = categoryPlaces[randomIndex]
+
+      resultPlaces.push(pickedPlace)
+    }
+
     setIsLoading(false)
+    return resultPlaces
   }
-
-  useEffect(() => {
-    if (screen === 'result') {
-      loadPlaces()
-    }
-  }, [screen, selectedVibe, selectedCategories])
 
   useEffect(() => {
     const id = getOrCreateUID()
     setUid(id)
   }, [])
 
-  function handleCopy(address: string) {
-    navigator.clipboard.writeText(address)
-
+  function handleCopy() {
     setCopied(true)
 
     setTimeout(() => {
@@ -93,6 +102,16 @@ function App() {
   }
 
   async function handleSpin() {
+    setSpinErrorMessage('')
+
+    const resultPlaces = await getPlacesForSpin()
+
+    if (!resultPlaces) {
+      setPlaces([])
+      setSpinErrorMessage('По выбранным настройкам сейчас ничего не найдено')
+      return
+    }
+
     const { data, error } = await supabase.rpc('use_spin', { p_uid: uid } as any)
 
     if (error) {
@@ -107,6 +126,7 @@ function App() {
       setSpinsLeft(data)
     }
 
+    setPlaces(resultPlaces)
     setScreen('spinner')
   }
 
@@ -140,7 +160,7 @@ function App() {
             justifyContent: 'space-between',
             padding: '24px 16px',
             boxSizing: 'border-box',
-            background: '#F5F5F7',
+            background: screenBackground,
           }}
         >
           <div
@@ -214,7 +234,7 @@ function App() {
             minHeight: '100vh',
             padding: '24px 16px',
             boxSizing: 'border-box',
-            background: '#F5F5F7',
+            background: screenBackground,
             display: 'flex',
             flexDirection: 'column',
           }}
@@ -331,7 +351,7 @@ function App() {
             minHeight: '100vh',
             padding: '24px 16px',
             boxSizing: 'border-box',
-            background: '#F5F5F7',
+            background: screenBackground,
             display: 'flex',
             flexDirection: 'column',
           }}
@@ -477,7 +497,7 @@ function App() {
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            background: '#F5F5F7',
+            background: screenBackground,
             padding: 16,
           }}
         >
@@ -494,7 +514,6 @@ function App() {
           <SlotSpinner
             categories={selectedCategories}
             canSpin={canSpin}
-            setCanSpin={setCanSpin}
             onFinish={() => setScreen('result')}
           />
         </div>
@@ -506,7 +525,7 @@ function App() {
             minHeight: '100vh',
             padding: '24px 16px',
             boxSizing: 'border-box',
-            background: '#F5F5F7',
+            background: screenBackground,
           }}
         >
           <button
@@ -576,7 +595,7 @@ function App() {
                 <PlaceCard
                   key={place.id}
                   place={place}
-                  onCopy={() => handleCopy(place.address)}
+                  onCopy={handleCopy}
                 />
               ))}
             </div>

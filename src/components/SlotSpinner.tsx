@@ -12,7 +12,6 @@ type SlotSpinnerProps = {
   categories: number[]
   onFinish: () => void
   canSpin: boolean
-  setCanSpin: (value: boolean) => void
 }
 
 const categoryImages: Record<number, string> = {
@@ -43,7 +42,11 @@ export default function SlotSpinner({ categories, onFinish, canSpin }: SlotSpinn
 
     for (let i = 0; i < doorsRef.current.length; i++) {
       const door = doorsRef.current[i]
-      const boxes = door.querySelector('.boxes') as HTMLDivElement
+      const boxes = door.querySelector('.boxes')
+
+      if (!boxes || !(boxes instanceof HTMLDivElement)) {
+        continue
+      }
 
       let pool = shuffle(allCategories)
 
