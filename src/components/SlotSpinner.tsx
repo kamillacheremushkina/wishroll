@@ -1,4 +1,12 @@
 import { useRef, useState } from 'react'
+import foodIcon from '../assets/еда.svg'
+import barsIcon from '../assets/бары.svg'
+import cultureIcon from '../assets/культура.svg'
+import shoppingIcon from '../assets/шоппинг.svg'
+import coworkIcon from '../assets/ко_ворк.svg'
+import walksIcon from '../assets/пешие_прогулки.svg'
+import funIcon from '../assets/развлечение.svg'
+import nightlifeIcon from '../assets/ночная_жизнь.svg'
 
 type SlotSpinnerProps = {
   categories: number[]
@@ -8,14 +16,14 @@ type SlotSpinnerProps = {
 }
 
 const categoryImages: Record<number, string> = {
-  1: '/src/assets/еда.svg',
-  2: '/src/assets/бары.svg',
-  3: '/src/assets/культура.svg',
-  4: '/src/assets/шоппинг.svg',
-  5: '/src/assets/ко_ворк.svg',
-  6: '/src/assets/пешие_прогулки.svg',
-  7: '/src/assets/развлечение.svg',
-  8: '/src/assets/ночная_жизнь.svg',
+  1: foodIcon,
+  2: barsIcon,
+  3: cultureIcon,
+  4: shoppingIcon,
+  5: coworkIcon,
+  6: walksIcon,
+  7: funIcon,
+  8: nightlifeIcon,
 }
 
 function shuffle(arr: number[]) {
