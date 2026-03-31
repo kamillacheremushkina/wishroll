@@ -94,7 +94,7 @@ function PlaceCard({ place, onCopy }: PlaceCardProps) {
                     position: 'absolute',
                     top: 12,
                     right: 12,
-                    background: '#565864',
+                    background: '#125BEC',
                     color: '#fff',
                     padding: '1px 12px',
                     borderRadius: 15,
@@ -111,9 +111,9 @@ function PlaceCard({ place, onCopy }: PlaceCardProps) {
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    height: '60%',
+                    height: '100%',
                     background:
-                        'linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0))',
+                        'linear-gradient(to top, #1C1C1C, #1C1C1C00 80%)',
                 }}
             />
 
@@ -126,7 +126,7 @@ function PlaceCard({ place, onCopy }: PlaceCardProps) {
                     right: 12,
                     width: 40,
                     height: 40,
-                    background: 'rgba(86, 88, 100, 0.7)',
+                    background: '#1C1C1F 60%',
                     borderRadius: 12,
                     display: 'flex',
                     alignItems: 'center',
@@ -154,6 +154,7 @@ function PlaceCard({ place, onCopy }: PlaceCardProps) {
                     left: 16,
                     right: 100,
                     color: '#fff',
+                    border: '1px solid #1C1C1F',
                     textAlign: 'left',
                 }}
             >

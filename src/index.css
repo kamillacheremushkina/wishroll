@@ -120,3 +120,15 @@ code {
   height: 60%;
   object-fit: contain;
 }
+
+.hero-wheel {
+  width: clamp(320px, 90vw, 700px);
+  transform: translateY(20px);
+}
+
+/* скрываем на десктопе */
+@media (min-width: 768px) {
+  .hero-wheel {
+    display: none;
+  }
+}
