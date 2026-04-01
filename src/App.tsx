@@ -12,7 +12,41 @@ import categoriesImage from './assets/categories-image.svg'
 import spinImage from './assets/spin-image.svg'
 
 
-const screenBackground = 'linear-gradient(180deg, #FFFFFF 0%, #F6F6F6 100%)'
+const screenBackground = '#FFFFFF'
+const APP_MAX_WIDTH = 420
+
+function MobileScreen({ children, background = screenBackground }: any) {
+  return (
+    <div
+      style={{
+        height: '100dvh',
+        minHeight: '100dvh',
+        overflow: 'hidden',
+        display: 'flex',
+        justifyContent: 'center',
+        background,
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: APP_MAX_WIDTH,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          paddingTop: 'max(12px, env(safe-area-inset-top))',
+          paddingRight: 20,
+          paddingBottom: 'max(16px, env(safe-area-inset-bottom))',
+          paddingLeft: 20,
+          boxSizing: 'border-box',
+          position: 'relative',
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  )
+}
 
 function App() {
   function getOrCreateUID() {
@@ -36,7 +70,6 @@ function App() {
   const [canSpin, setCanSpin] = useState(true)
   const [spinErrorMessage, setSpinErrorMessage] = useState('')
   const [uid, setUid] = useState<string | null>(null)
-  const [isMobile, setIsMobile] = useState(true)
   const spinnerRef = useRef<any>(null)
 
   async function getPlacesForSpin() {
@@ -86,15 +119,6 @@ function App() {
     setUid(id)
   }, [])
 
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768)
-
-    check()
-
-    window.addEventListener('resize', check)
-
-    return () => window.removeEventListener('resize', check)
-  }, [])
 
   useEffect(() => {
     if (!spinErrorMessage) return
@@ -160,147 +184,174 @@ function App() {
 
   return (
     <div>
+      {/* GLOBAL SPINS BADGE */}
       {screen !== 'start' && spinsLeft !== null && (
         <div
           style={{
             position: 'fixed',
-            top: 50,
-            left: 15,
-            background: '#125BEC',
-            borderRadius: 999,
-            padding: '6px 14px 6px 6px',
+            top: 'max(16px, env(safe-area-inset-top))',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '100%',
+            maxWidth: APP_MAX_WIDTH,
+            padding: '0 20px',
+            boxSizing: 'border-box',
             display: 'flex',
-            alignItems: 'center',
-            gap: 10,
+            justifyContent: 'flex-start', // matches top-left in mockup
+            pointerEvents: 'none',
             zIndex: 1000,
           }}
         >
-          {/* КРУГ */}
           <div
             style={{
-              width: 28,
-              height: 28,
-              borderRadius: '50%',
-              background: '#FFFFFF',
+              background: '#125BEC',
+              borderRadius: 40,
+              padding: '2px 16px 2px 2px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <span style={{ fontSize: 14 }}>✦</span>
-          </div>
-
-          {/* ЧИСЛО */}
-          <div
-            style={{
+              gap: 8,
               color: '#FFFFFF',
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: 500,
-              lineHeight: 1,
+              pointerEvents: 'auto',
+              
             }}
           >
-            {spinsLeft}
+            <div
+              style={{
+                background: '#FFFFFF',
+                color: '#1C1C1F',
+                borderRadius: '50%',
+                width: 24,
+                height: 24,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 14,
+                lineHeight: 1,
+              }}
+            >
+              ✦
+            </div>
+            <span>{spinsLeft}</span>
           </div>
         </div>
       )}
 
       {screen === 'start' && (
-        <div
-          style={{
-            minHeight: '100svh',
-            display: 'flex',
-            flexDirection: 'column',
-            padding: '150px 0px 30px',
-            boxSizing: 'border-box',
-            background: '#125BEC',
-          }}
-        >
-          {/* TOP */}
-          <div style={{ textAlign: 'center' }}>
-            <div
-              style={{
-                fontSize: 30,
-                fontWeight: 600,
-                color: '#fff',
-                marginBottom: 15,
-                marginRight: 30,
-                marginLeft: 30,
-              }}
-            >
-              Открывай город заново
-            </div>
-
-            <div
-              style={{
-                fontSize: 15,
-                lineHeight: 1.5,
-                color: 'rgb(255, 255, 255)',
-                marginRight: 45,
-                marginLeft: 45,
-              }}
-            >
-              Долго не можешь выбрать место для прогулки? Доверься судьбе.
-              Выбери вайб и категории, а рулетка решит всё за тебя за несколько секунд
-            </div>
-          </div>
-
-          {/* CENTER */}
+        <MobileScreen background="#125BEC">
           <div
             style={{
               flex: 1,
-              position: 'relative',
+              minHeight: 0,
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
+              flexDirection: 'column',
             }}
           >
-            {/* задний текст */}
-            <img
-              src={heroText}
-              alt=""
+            {/* TEXT */}
+            <div
               style={{
-                position: 'absolute',
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-                backgroundPosition: isMobile ? 'center 50%' : 'center',
-                width: isMobile ? '600vw' : '100%',
-                maxWidth: 'none',
-                opacity: 1,
-                pointerEvents: 'none',
-                zIndex: 0,
+                flexShrink: 0,
+                textAlign: 'center',
+                paddingTop: 'clamp(45px, 6vh, 60px)',
               }}
-            />
+            >
+              <div
+                style={{
+                  fontSize: 'clamp(28px, 8vw, 42px)',
+                  fontWeight: 600,
+                  lineHeight: 0.95,
+                  color: '#FFFFFF',
+                  marginBottom: 14,
+                  maxWidth: 320,
+                  marginLeft: 'auto',
+                  marginRight: 'auto',
+                }}
+              >
+                Отрывай город заново
+              </div>
 
-            {/* рулетка */}
-            <img
-              src={heroWheel}
-              className="hero-wheel"
-              alt="wheel"
+              <div
+                style={{
+                  fontSize: 'clamp(15px, 4.2vw, 20px)',
+                  lineHeight: 1.35,
+                  color: '#FFFFFF',
+                  maxWidth: 340,
+                  marginLeft: 'auto',
+                  marginRight: 'auto',
+                }}
+              >
+                Никакого бесконечного скроллинга. Твои желания, один поворот рулетки и можно выходить навстречу новому. Играй в город с нами.
+              </div>
+            </div>
+
+            {/* IMAGES */}
+            <div
               style={{
+                flex: 1,
+                minHeight: 0,
                 position: 'relative',
-                width: '110%',
-                maxWidth: 500,
-                zIndex: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                margin: '16px 0',
               }}
-            />
-          </div>
+            >
+              <img
+                src={heroText}
+                alt=""
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '240%',
+                  minWidth: 600,
+                  maxWidth: 1000,
+                  height: 'auto',
+                  pointerEvents: 'none',
+                  zIndex: 0,
+                }}
+              />
 
-          <div style={{ marginTop: 'auto' }}>
-            {/* ВОТ ЭТО контейнер только для кнопок */}
-            <div style={{ padding: '0 30px 40px' }}>
-              {/* BOTTOM */}
+              <img
+                src={heroWheel}
+                className="hero-wheel"
+                alt="wheel"
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  maxWidth: 380,
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  pointerEvents: 'none',
+                  zIndex: 1,
+                }}
+              />
+            </div>
+
+            {/* BUTTONS */}
+            <div
+              style={{
+                flexShrink: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                paddingBottom: 4,
+              }}
+            >
               <button
                 onClick={() => setScreen('rules')}
                 style={{
                   width: '100%',
-                  padding: '12px',
+                  height: 54,
                   borderRadius: 40,
                   border: 'none',
-                  background: '#ffffff',
-                  marginBottom: 10,
+                  background: '#FFFFFF',
+                  color: '#1C1C1F',
                   fontSize: 18,
+                  cursor: 'pointer',
                 }}
               >
                 Читать правила
@@ -310,587 +361,611 @@ function App() {
                 onClick={() => setScreen('vibe')}
                 style={{
                   width: '100%',
-                  padding: '12px',
+                  height: 54,
                   borderRadius: 40,
                   border: 'none',
-                  fontSize: 18,
-                  color: '#fff',
                   background: '#1C1C1F',
+                  color: '#FFFFFF',
+                  fontSize: 18,
+                  cursor: 'pointer',
                 }}
               >
                 Начать
               </button>
             </div>
           </div>
-        </div>
+        </MobileScreen>
       )}
 
       {screen === 'rules' && (
-        <div
-          style={{
-            minHeight: '100svh',
-            background: '#125BEC',
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'center',
-            padding: '20px',
-            paddingTop: 150,
-            boxSizing: 'border-box',
-          }}
-        >
-          {/* КАРТОЧКА */}
-          <div
-            style={{
-              width: '100%',
-              maxWidth: 420,
-              background: '#F1F1F1',
-              borderRadius: 28,
-              padding: '25px 20px',
-              position: 'relative',
-              zIndex: 2,
-            }}
-          >
-            {/* КРЕСТИК */}
-            <button
-              onClick={() => setScreen('start')}
-              style={{
-                position: 'absolute',
-                top: 10,
-                right: 10,
-                background: 'transparent',
-                border: 'none',
-                fontSize: 45,
-                cursor: 'pointer',
-              }}
-            >
-              ×
-            </button>
-
-            {/* КОНТЕНТ */}
-            <div style={{ color: '#1C1C1F' }}>
-              <div style={{ fontSize: 25, fontWeight: 600, marginBottom: 16 }}>
-                Твоя цель
-              </div>
-
-              <div style={{ fontSize: 15, lineHeight: 1.5, marginBottom: 24 }}>
-                Найти новое место для прогулки одному или компанией как можно скорее.
-                Побеждает игрок, который классно провёл время
-              </div>
-
-              <div style={{ fontSize: 25, fontWeight: 600, marginBottom: 12 }}>
-                Как играть?
-              </div>
-
-              <div style={{ fontSize: 15, lineHeight: 1.6, marginBottom: 24 }}>
-                1. Выбери вайб под настроение <br />
-                2. Выбери три категории мест <br />
-                3. Вращай рулетку <br />
-                4. Выбирай место и отправляйся на прогулку
-              </div>
-
-              <div style={{ fontSize: 25, fontWeight: 600, marginBottom: 12 }}>
-                Внимание
-              </div>
-
-              <div style={{ fontSize: 15, lineHeight: 1.5 }}>
-                Каждому игроку ежедневно даётся только 3 спина, чтобы прокрутить
-                рулетку. <br />
-                На следующий день спины обновляются автоматически.
-              </div>
-            </div>
-          </div>
-
-          {/* КАРТИНКА СНИЗУ */}
-          <img
-            src={rulesWheel}
-            alt=""
-            style={{
-              position: 'absolute',
-              bottom: '-1%',
-              left: '54%',
-              transform: 'translateX(-50%)',
-              width: '110%',
-              maxWidth: 700,
-              pointerEvents: 'none',
-              zIndex: 0,
-            }}
-          />
-        </div>
-      )}
-
-      {screen === 'vibe' && (
-        <div
-          style={{
-            minHeight: '100svh',
-            display: 'flex',
-            flexDirection: 'column',
-            background: screenBackground,
-            padding: '150px 30px 30px',
-            boxSizing: 'border-box',
-          }}
-        >
-          {/* IMAGE */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              marginBottom: 25,
-            }}
-          >
-            <img
-              src={rulesImage}
-              alt=""
-              style={{
-                width: '100%',
-                maxWidth: 320,
-                height: 'auto',
-              }}
-            />
-          </div>
-
-          {/* TITLE */}
-          <div
-            style={{
-              fontSize: 30,
-              fontWeight: 600,
-              textAlign: 'center',
-              marginBottom: 15,
-              color: '#1C1C1F',
-            }}
-          >
-            Настрой свой вайб
-          </div>
-
-          {/* DESCRIPTION */}
-          <div
-            style={{
-              fontSize: 15,
-              lineHeight: 1.5,
-              textAlign: 'center',
-              color: '#1C1C1C',
-              marginBottom: 25,
-              padding: '0 10px',
-            }}
-          >
-            Долго не можешь выбрать место для прогулки? Доверься судьбе.
-            Выбери вайб и категории, а рулетка решит всё за тебя за несколько секунд
-          </div>
-
-          {/* BUTTONS GRID */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 10,
-            }}
-          >
-            {vibes.map((vibe) => {
-              const isActive = selectedVibe === vibe.value
-
-              return (
-                <button
-                  key={vibe.value}
-                  onClick={() => setSelectedVibe(vibe.value)}
-                  style={{
-                    padding: '12px 10px',
-                    borderRadius: 30,
-                    border: isActive ? '1px solid #125BEC' : '1px solid #1C1C1F',
-                    background: isActive ? '#125BEC' : '#FFFFFF',
-                    color: isActive ? '#FFFFFF' : '#1C1C1F',
-                    fontSize: 15,
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {vibe.label}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* BOTTOM BUTTONS */}
-          <div style={{ marginTop: 'auto' }}>
-            {/* ДАЛЕЕ */}
-            <button
-              onClick={() => {
-                if (!selectedVibe) return
-                setScreen('categories')
-              }}
-              disabled={!selectedVibe}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: 40,
-                border: 'none',
-                background: '#1C1C1F',
-                color: '#fff',
-                fontSize: 18,
-                marginBottom: 10,
-                opacity: selectedVibe ? 1 : 0.5,
-                cursor: selectedVibe ? 'pointer' : 'default',
-              }}
-            >
-              Далее
-            </button>
-
-            {/* НАЗАД */}
-            <button
-              onClick={() => setScreen('start')}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: 40,
-                border: '1px solid #1C1C1F',
-                background: '#FFFFFF',
-                color: '#1C1C1F',
-                fontSize: 16,
-                cursor: 'pointer',
-              }}
-            >
-              Назад
-            </button>
-          </div>
-        </div>
-      )}
-
-      {screen === 'categories' && (
-        <div
-          style={{
-            minHeight: '100svh',
-            display: 'flex',
-            flexDirection: 'column',
-            background: screenBackground,
-            padding: '150px 30px 30px',
-            boxSizing: 'border-box',
-          }}
-        >
-          {/* TITLE */}
-          <div
-            style={{
-              fontSize: 30,
-              fontWeight: 600,
-              textAlign: 'center',
-              marginBottom: 15,
-              color: '#1C1C1F',
-            }}
-          >
-            Выбери категорию
-          </div>
-
-          {/* DESCRIPTION */}
-          <div
-            style={{
-              fontSize: 15,
-              lineHeight: 1.5,
-              textAlign: 'center',
-              color: '#1C1C1C',
-              marginBottom: 30,
-              padding: '0 10px',
-            }}
-          >
-            Долго не можешь выбрать место для прогулки? Доверься судьбе.
-            Выбери вайб и категории, а рулетка решит всё за тебя за несколько секунд
-          </div>
-
-          {/* BUTTONS GRID */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 10,
-              marginBottom: 30,
-            }}
-          >
-            {categories.map((category) => {
-              const isActive = selectedCategories.includes(category.value)
-
-              return (
-                <button
-                  key={category.value}
-                  onClick={() => toggleCategory(category.value)}
-                  style={{
-                    padding: '12px 10px',
-                    borderRadius: 30,
-                    border: isActive ? '1px solid #125BEC' : '1px solid #1C1C1F',
-                    background: isActive ? '#125BEC' : '#FFFFFF',
-                    color: isActive ? '#FFFFFF' : '#1C1C1F',
-                    fontSize: 15,
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    transition: '0.2s',
-                  }}
-                >
-                  {category.label}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* IMAGE */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              marginTop: 'auto',
-              marginBottom: 10,
-            }}
-          >
-            <img
-              src={categoriesImage}
-              alt=""
-              style={{
-                width: '85%',
-                maxWidth: 360,
-                height: 'auto',
-              }}
-            />
-          </div>
-
-          {/* NOTIFICATION */}
-          {spinErrorMessage && (
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 150, // регулируешь положение над кнопкой
-                left: 30,
-                right: 30,
-                display: 'flex',
-                justifyContent: 'center',
-                pointerEvents: 'none', // чтобы не мешал кликам
-              }}
-            >
-              <div
-                style={{
-                  background: '#FFFFFF',
-                  border: '1px solid #1C1C1F',
-                  borderRadius: 0,
-                  padding: '5px 10px',
-                  fontSize: 15,
-                  color: '#1C1C1F',
-                  textAlign: 'center',
-                  lineHeight: 1.3,
-                  pointerEvents: 'auto',
-                }}
-              >
-                {spinErrorMessage}
-              </div>
-            </div>
-          )}
-
-          {/* BOTTOM BUTTONS */}
-          <div style={{ marginTop: 'auto' }}>
-            {/* ДАЛЕЕ */}
-            <button
-              onClick={async () => {
-                if (selectedCategories.length !== 3) return
-                await handleSpin()
-              }}
-              disabled={selectedCategories.length !== 3}
-              style={{
-                width: '100%',
-                padding: '14px',
-                borderRadius: 40,
-                border: 'none',
-                background: '#1C1C1F',
-                color: '#fff',
-                fontSize: 18,
-                marginBottom: 10,
-                opacity: selectedCategories.length === 3 ? 1 : 0.5,
-                cursor: selectedCategories.length === 3 ? 'pointer' : 'default',
-              }}
-            >
-              Далее
-            </button>
-
-            {/* НАЗАД */}
-            <button
-              onClick={() => setScreen('vibe')}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: 40,
-                border: '1px solid #1C1C1F',
-                background: '#FFFFFF',
-                color: '#1C1C1F',
-                fontSize: 16,
-                cursor: 'pointer',
-              }}
-            >
-              Назад
-            </button>
-          </div>
-        </div>
-      )}
-
-      {screen === 'spinner' && (
-        <div
-          style={{
-            minHeight: '100svh',
-            display: 'flex',
-            flexDirection: 'column',
-            background: screenBackground,
-            padding: '250px 30px 30px',
-            boxSizing: 'border-box',
-            position: 'relative',
-          }}
-        >
-
-
-          {/* TITLE */}
-          <div
-            style={{
-              fontSize: 28,
-              fontWeight: 600,
-              textAlign: 'center',
-              marginBottom: 30,
-              color: '#1C1C1F',
-            }}
-          >
-            Испытай судьбу
-          </div>
-
-          {/* SPINNER BOX */}
-          <div
-            style={{
-              background: '#2B63F6',
-              borderRadius: 28,
-              padding: '20px 15px',
-              marginBottom: 30,
-            }}
-          >
-            <SlotSpinner
-              ref={spinnerRef}
-              categories={selectedCategories}
-              canSpin={canSpin}
-              onFinish={() => setScreen('result')}
-            />
-          </div>
-
-          {/* IMAGE */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              marginTop: 'auto',
-              marginBottom: -150,
-              marginLeft: 'auto',
-              marginRight: 5,
-            }}
-          >
-            <img
-              src={spinImage}
-              alt=""
-              style={{
-                width: '100%',
-                maxWidth: 260,
-                height: 'auto',
-              }}
-            />
-          </div>
-
-          {/* BOTTOM BUTTONS */}
-          <div style={{ marginTop: 'auto' }}>
-            {/* SPIN BUTTON */}
-            <button
-              onClick={() => spinnerRef.current?.spin()}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: 40,
-                border: 'none',
-                background: '#1C1C1F',
-                color: '#fff',
-                fontSize: 18,
-                marginBottom: 10,
-                opacity: 1,
-                cursor: 'pointer',
-              }}
-            >
-              Крутить
-            </button>
-          </div>
-        </div>
-      )}
-
-      {screen === 'result' && (
-        <div
-          style={{
-            minHeight: '100svh',
-            background: screenBackground,
-            display: 'flex',
-            flexDirection: 'column',
-            padding: '150px 30px 30px',
-          }}
-        >
-          {/* КОНТЕНТ (СКРОЛЛЯЩИЙСЯ) */}
+        <MobileScreen background="#125BEC">
           <div
             style={{
               flex: 1,
-              padding: '0px 0px 200px',
-              boxSizing: 'border-box',
+              minHeight: 0,
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingTop: 20,
+              paddingBottom: 12,
+              overflow: 'hidden',
             }}
           >
+            <img
+              src={rulesWheel}
+              alt=""
+              style={{
+                position: 'absolute',
+                bottom: -20,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '115%',
+                maxWidth: 560,
+                pointerEvents: 'none',
+                zIndex: 0,
+              }}
+            />
 
-            {/* КАРТОЧКИ */}
             <div
               style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 14,
+                width: '100%',
+                maxWidth: 380,
+                maxHeight: '100%',
+                overflowY: 'auto',
+                background: '#F1F1F1',
+                borderRadius: 28,
+                padding: '24px 20px',
+                position: 'relative',
+                zIndex: 2,
               }}
             >
-              {places.map((place) => (
-                <PlaceCard
-                  key={place.id}
-                  place={place}
-                  onCopy={handleCopy}
-                />
-              ))}
+              <button
+                onClick={() => setScreen('start')}
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  right: 10,
+                  width: 40,
+                  height: 40,
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: 34,
+                  lineHeight: 1,
+                  cursor: 'pointer',
+                }}
+              >
+                ×
+              </button>
+
+              <div style={{ color: '#1C1C1F', paddingRight: 18 }}>
+                <div style={{ fontSize: 24, fontWeight: 600, marginBottom: 16 }}>
+                  Цель игры
+                </div>
+
+                <div style={{ fontSize: 15, lineHeight: 1.5, marginBottom: 24 }}>
+                  Найти новое место для прогулки одному или компанией как можно скорее.
+                  Побеждает игрок, который классно провёл время
+                </div>
+
+                <div style={{ fontSize: 24, fontWeight: 600, marginBottom: 12 }}>
+                  Как играть?
+                </div>
+
+                <div style={{ fontSize: 15, lineHeight: 1.6, marginBottom: 24 }}>
+                  1. Выбери вайб под настроение <br />
+                  2. Выбери три категории мест <br />
+                  3. Вращай рулетку <br />
+                  4. Выбирай место и отправляйся на прогулку
+                </div>
+
+                <div style={{ fontSize: 24, fontWeight: 600, marginBottom: 12 }}>
+                  Внимание
+                </div>
+
+                <div style={{ fontSize: 15, lineHeight: 1.5 }}>
+                  Каждому игроку ежедневно даётся только 3 спина, чтобы прокрутить
+                  рулетку. <br />
+                  На следующий день спины обновляются автоматически.
+                </div>
+              </div>
             </div>
           </div>
+        </MobileScreen>
+      )}
 
-          {copied && (
+      {screen === 'vibe' && (
+        <MobileScreen background={screenBackground}>
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              paddingTop: 45,
+            }}
+          >
             <div
               style={{
-                position: 'fixed',
-                bottom: 150,
-                left: 30,
-                right: 30,
                 display: 'flex',
                 justifyContent: 'center',
-                zIndex: 2000,
-                pointerEvents: 'none',
+                marginBottom: 14,
+                flexShrink: 0,
+              }}
+            >
+              <img
+                src={rulesImage}
+                alt=""
+                style={{
+                  width: '100%',
+                  maxWidth: 300,
+                  height: 'auto',
+                }}
+              />
+            </div>
+
+            <div
+              style={{
+                fontSize: 28,
+                fontWeight: 600,
+                textAlign: 'center',
+                marginBottom: 10,
+                color: '#1C1C1F',
+                flexShrink: 0,
+              }}
+            >
+              На каком вайбе ты сегодня?
+            </div>
+
+            <div
+              style={{
+                fontSize: 14,
+                lineHeight: 1.4,
+                textAlign: 'center',
+                color: '#1C1C1F',
+                marginBottom: 18,
+                padding: '0 6px',
+                flexShrink: 0,
+              }}
+            >
+              Долго не можешь выбрать место для прогулки? Доверься судьбе. Выбирай...
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 10,
+                flexShrink: 0,
+              }}
+            >
+              {vibes.map((vibe) => {
+                const isActive = selectedVibe === vibe.value
+
+                return (
+                  <button
+                    key={vibe.value}
+                    onClick={() => setSelectedVibe(vibe.value)}
+                    style={{
+                      height: 44,
+                      borderRadius: 30,
+                      border: isActive ? '1px solid #125BEC' : '1px solid #1C1C1F',
+                      background: isActive ? '#125BEC' : '#FFFFFF',
+                      color: isActive ? '#FFFFFF' : '#1C1C1F',
+                      fontSize: 15,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {vibe.label}
+                  </button>
+                )
+              })}
+            </div>
+
+            <div
+              style={{
+                marginTop: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                paddingTop: 16,
+                flexShrink: 0,
+              }}
+            >
+              <button
+                onClick={() => {
+                  if (!selectedVibe) return
+                  setScreen('categories')
+                }}
+                disabled={!selectedVibe}
+                style={{
+                  width: '100%',
+                  height: 54,
+                  borderRadius: 40,
+                  border: 'none',
+                  background: '#1C1C1F',
+                  color: '#FFFFFF',
+                  fontSize: 18,
+                  opacity: selectedVibe ? 1 : 0.5,
+                  cursor: selectedVibe ? 'pointer' : 'default',
+                }}
+              >
+                Далее
+              </button>
+
+              <button
+                onClick={() => setScreen('start')}
+                style={{
+                  width: '100%',
+                  height: 52,
+                  borderRadius: 40,
+                  border: '1px solid #1C1C1F',
+                  background: '#FFFFFF',
+                  color: '#1C1C1F',
+                  fontSize: 16,
+                }}
+              >
+                Назад
+              </button>
+            </div>
+          </div>
+        </MobileScreen>
+      )}
+
+      {screen === 'categories' && (
+        <MobileScreen background={screenBackground}>
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              paddingTop: 45,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 28,
+                fontWeight: 600,
+                textAlign: 'center',
+                marginBottom: 10,
+                color: '#1C1C1F',
+                flexShrink: 0,
+              }}
+            >
+              Куда пойдешь сегодня?
+            </div>
+
+            <div
+              style={{
+                fontSize: 14,
+                lineHeight: 1.4,
+                textAlign: 'center',
+                color: '#1C1C1F',
+                marginBottom: 18,
+                padding: '0 6px',
+                flexShrink: 0,
+              }}
+            >
+              А теперь 3 категории, и рулетка решит все за несколько секунд...
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 10,
+                flexShrink: 0,
+              }}
+            >
+              {categories.map((category) => {
+                const isActive = selectedCategories.includes(category.value)
+
+                return (
+                  <button
+                    key={category.value}
+                    onClick={() => toggleCategory(category.value)}
+                    style={{
+                      height: 44,
+                      borderRadius: 30,
+                      border: isActive ? '1px solid #125BEC' : '1px solid #1C1C1F',
+                      background: isActive ? '#125BEC' : '#FFFFFF',
+                      color: isActive ? '#FFFFFF' : '#1C1C1F',
+                      fontSize: 15,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {category.label}
+                  </button>
+                )
+              })}
+            </div>
+
+            <div
+              style={{
+                flex: 1,
+                minHeight: 90,
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+                paddingTop: 12,
+                paddingBottom: 8,
+              }}
+            >
+              <img
+                src={categoriesImage}
+                alt=""
+                style={{
+                  width: '70%',
+                  maxWidth: 300,
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                }}
+              />
+            </div>
+
+            {/* BUTTONS CONTAINER: Now relative to anchor the notification */}
+            <div
+              style={{
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                flexShrink: 0,
+              }}
+            >
+              {/* NOTIFICATION OVERLAY: Anchored to the top of the button container */}
+              {spinErrorMessage && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '100%',
+                    left: 0,
+                    width: '100%',
+                    paddingBottom: 12, // 12px gap above the Next button
+                    display: 'flex',
+                    justifyContent: 'center',
+                    pointerEvents: 'none', // Ensures it doesn't block clicks
+                    zIndex: 10,
+                  }}
+                >
+                  <div
+                    style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #1C1C1F',
+                      padding: '6px 12px',
+                      fontSize: 14,
+                      color: '#1C1C1F',
+                      textAlign: 'center',
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {spinErrorMessage}
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={async () => {
+                  if (selectedCategories.length !== 3) return
+                  await handleSpin()
+                }}
+                disabled={selectedCategories.length !== 3}
+                style={{
+                  width: '100%',
+                  height: 54,
+                  borderRadius: 40,
+                  border: 'none',
+                  background: '#1C1C1F',
+                  color: '#FFFFFF',
+                  fontSize: 18,
+                  opacity: selectedCategories.length === 3 ? 1 : 0.5,
+                  cursor: selectedCategories.length === 3 ? 'pointer' : 'default',
+                }}
+              >
+                Далее
+              </button>
+
+              <button
+                onClick={() => setScreen('vibe')}
+                style={{
+                  width: '100%',
+                  height: 52,
+                  borderRadius: 40,
+                  border: '1px solid #1C1C1C',
+                  background: '#FFFFFF',
+                  color: '#1C1C1F',
+                  fontSize: 16,
+                }}
+              >
+                Назад
+              </button>
+            </div>
+          </div>
+        </MobileScreen>
+      )}
+
+      {screen === 'spinner' && (
+        <MobileScreen background={screenBackground}>
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              paddingTop: 'clamp(24px, 6vh, 54px)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: 28,
+                fontWeight: 600,
+                textAlign: 'center',
+                marginBottom: 20,
+                color: '#1C1C1F',
+                flexShrink: 0,
+              }}
+            >
+              Испытай судьбу
+            </div>
+
+            <div
+              style={{
+                flexShrink: 0,
+                background: '#2B63F6',
+                borderRadius: 28,
+                padding: 'clamp(16px, 4vw, 20px) clamp(10px, 3vw, 15px)',
+                marginBottom: 16,
+                width: '100%',
+                boxSizing: 'border-box',
+              }}
+            >
+              <SlotSpinner
+                ref={spinnerRef}
+                categories={selectedCategories}
+                canSpin={canSpin}
+                onFinish={() => setScreen('result')}
+              />
+            </div>
+
+            <div
+              style={{
+                flex: 1,
+                minHeight: 0,
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+                paddingBottom: 8,
+              }}
+            >
+              <img
+                src={spinImage}
+                alt=""
+                style={{
+                  width: '100%',
+                  maxWidth: 170,
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                }}
+              />
+            </div>
+
+            <div style={{ flexShrink: 0 }}>
+              <button
+                onClick={() => spinnerRef.current?.spin()}
+                style={{
+                  width: '100%',
+                  height: 54,
+                  borderRadius: 40,
+                  border: 'none',
+                  background: '#1C1C1F',
+                  color: '#FFFFFF',
+                  fontSize: 18,
+                }}
+              >
+                Крутить
+              </button>
+            </div>
+          </div>
+        </MobileScreen>
+      )}
+
+      {screen === 'result' && (
+        <MobileScreen background={screenBackground}>
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              paddingTop: 64,
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
+                paddingBottom: 140, // Место под фиксированные кнопки
               }}
             >
               <div
                 style={{
-                  background: '#FFFFFF',
-                  color: '#1C1C1F',
-                  padding: '5px 15px',
-                  border: '1px solid #1C1C1F',
-                  borderRadius: 30,
                   fontSize: 14,
+                  lineHeight: 1.4,
+                  textAlign: 'center',
+                  color: '#1C1C1F',
+                  marginBottom: 18,
+                  padding: '0 6px',
+                  flexShrink: 0,
                 }}
               >
-                Адрес скопирован
+                Копируй адрес и в путь
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 14,
+                }}
+              >
+                {places.map((place) => (
+                  <PlaceCard
+                    key={place.id}
+                    place={place}
+                    onCopy={handleCopy}
+                  />
+                ))}
               </div>
             </div>
-          )}
+          </div>
 
-          {/* ФИКСИРОВАННЫЙ BOTTOM */}
+          {/* НИЖНИЙ ФИКСИРОВАННЫЙ БЛОК С КНОПКАМИ */}
           <div
             style={{
               position: 'fixed',
+              left: '50%',
+              transform: 'translateX(-50%)',
               bottom: 0,
-              left: 0,
-              right: 0,
-              padding: '30px',
-              background: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, #FFFFFF 40%)',
+              width: '100%',
+              maxWidth: APP_MAX_WIDTH,
+              padding: '24px 20px max(16px, env(safe-area-inset-bottom))',
+              boxSizing: 'border-box',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, #FFFFFF 38%)',
+              zIndex: 10,
             }}
           >
-            {/* КРУТИТЬ ЕЩЕ */}
+            {/* УВЕДОМЛЕНИЕ: Теперь привязано к верхнему краю кнопок */}
+            {copied && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '90%', // Всегда строго над контейнером кнопок
+                  left: 0,
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  paddingBottom: 0,
+                  pointerEvents: 'none',
+                  zIndex: 2000,
+                }}
+              >
+                <div
+                  style={{
+                    background: '#FFFFFF',
+                    color: '#1C1C1F',
+                    padding: '6px 14px',
+                    border: '1px solid #1C1C1F',
+                    borderRadius: 30,
+                    fontSize: 14,
+                  }}
+                >
+                  Адрес скопирован
+                </div>
+              </div>
+            )}
+
             <button
               onClick={() => {
                 if (!canSpin) return
@@ -899,11 +974,11 @@ function App() {
               disabled={!canSpin}
               style={{
                 width: '100%',
-                padding: '12px',
+                height: 54,
                 borderRadius: 40,
                 border: 'none',
                 background: canSpin ? '#1C1C1F' : '#C7C7CC',
-                color: '#fff',
+                color: '#FFFFFF',
                 fontSize: 18,
                 marginBottom: 10,
                 cursor: canSpin ? 'pointer' : 'default',
@@ -912,23 +987,22 @@ function App() {
               Крутить еще
             </button>
 
-            {/* СМЕНИТЬ */}
             <button
               onClick={() => setScreen('categories')}
               style={{
                 width: '100%',
-                padding: '12px',
+                height: 52,
                 borderRadius: 40,
                 border: '1px solid #1C1C1C',
                 background: '#FFFFFF',
                 color: '#1C1C1F',
-                fontSize: 18,
+                fontSize: 16,
               }}
             >
               Сменить настройки
             </button>
           </div>
-        </div>
+        </MobileScreen>
       )}
     </div>
   )

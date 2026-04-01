@@ -154,7 +154,6 @@ function PlaceCard({ place, onCopy }: PlaceCardProps) {
                     left: 16,
                     right: 100,
                     color: '#fff',
-                    border: '1px solid #1C1C1F',
                     textAlign: 'left',
                 }}
             >
