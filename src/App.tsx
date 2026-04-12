@@ -72,12 +72,55 @@ function App() {
   const [uid, setUid] = useState<string | null>(null)
   const spinnerRef = useRef<any>(null)
 
+  async function loadUserSpins(currentUid: string) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('spins_left')
+      .eq('uid', currentUid)
+      .maybeSingle()
+
+    if (error) {
+      console.error(error)
+      return
+    }
+
+    const nextSpinsLeft = data?.spins_left ?? 3
+
+    setSpinsLeft(nextSpinsLeft)
+    setCanSpin(nextSpinsLeft > 0)
+  }
+
+  async function handleShareApp() {
+    const appUrl = window.location.origin
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'WishRoll',
+          text: 'Открой WishRoll и выбери место для прогулки',
+          url: appUrl,
+        })
+        return
+      }
+
+      await navigator.clipboard.writeText(appUrl)
+      alert('Ссылка на приложение скопирована')
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+
+  const showSpinsBadge =
+    screen === 'vibe' ||
+    screen === 'categories' ||
+    screen === 'spinner' ||
+    screen === 'result'
+
   async function getPlacesForSpin() {
     if (!selectedVibe || selectedCategories.length !== 3) {
       return null
     }
-
-    setIsLoading(true)
 
     const { data, error } = await supabase
       .from('places')
@@ -87,7 +130,6 @@ function App() {
 
     if (error) {
       console.error(error)
-      setIsLoading(false)
       return null
     }
 
@@ -100,7 +142,6 @@ function App() {
       )
 
       if (categoryPlaces.length === 0) {
-        setIsLoading(false)
         return null
       }
 
@@ -110,13 +151,13 @@ function App() {
       resultPlaces.push(pickedPlace)
     }
 
-    setIsLoading(false)
     return resultPlaces
   }
 
   useEffect(() => {
     const id = getOrCreateUID()
     setUid(id)
+    loadUserSpins(id)
   }, [])
 
 
@@ -153,14 +194,34 @@ function App() {
     setSelectedCategories([...selectedCategories, categoryValue])
   }
 
+  async function handleGoToSpinner() {
+    if (selectedCategories.length !== 3) return
+
+    setSpinErrorMessage('')
+    setIsLoading(true)
+
+    const resultPlaces = await getPlacesForSpin()
+
+    setIsLoading(false)
+
+    if (!resultPlaces) {
+      setSpinErrorMessage('К сожалению, у нас пока что нет подходящих мест')
+      return
+    }
+
+    setScreen('spinner')
+  }
+
   async function handleSpin() {
     setSpinErrorMessage('')
+    setIsLoading(true)
 
     const resultPlaces = await getPlacesForSpin()
 
     if (!resultPlaces) {
       setPlaces([])
-      setSpinErrorMessage('К сожалению, у нас пока что нет походящих мест')
+      setSpinErrorMessage('К сожалению, у нас пока что нет подходящих мест')
+      setIsLoading(false)
       return
     }
 
@@ -170,22 +231,23 @@ function App() {
       console.error(error)
       setCanSpin(false)
       setSpinErrorMessage('На сегодня попытки закончились')
+      setIsLoading(false)
       return
     }
 
     if (data !== null) {
-      console.log('spinsLeft:', data)
       setSpinsLeft(data)
+      setCanSpin(data > 0)
     }
 
     setPlaces(resultPlaces)
-    setScreen('spinner')
+    spinnerRef.current?.spin()
   }
 
   return (
     <div>
-      {/* GLOBAL SPINS BADGE */}
-      {screen !== 'start' && spinsLeft !== null && (
+      {/* TOP ACTIONS */}
+      {showSpinsBadge && spinsLeft !== null && (
         <div
           style={{
             position: 'fixed',
@@ -197,7 +259,8 @@ function App() {
             padding: '0 20px',
             boxSizing: 'border-box',
             display: 'flex',
-            justifyContent: 'flex-start', // matches top-left in mockup
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
             pointerEvents: 'none',
             zIndex: 1000,
           }}
@@ -214,7 +277,6 @@ function App() {
               fontSize: 15,
               fontWeight: 500,
               pointerEvents: 'auto',
-              
             }}
           >
             <div
@@ -235,6 +297,25 @@ function App() {
             </div>
             <span>{spinsLeft}</span>
           </div>
+
+          <button
+            onClick={handleShareApp}
+            style={{
+              background: '#125BEC',
+              borderRadius: 40,
+              padding: '2px 16px 2px 2px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              color: '#FFFFFF',
+              fontSize: 15,
+              fontWeight: 500,
+              pointerEvents: 'auto',
+            }}
+            aria-label="Поделиться приложением"
+          >
+            ↗
+          </button>
         </div>
       )}
 
@@ -746,11 +827,8 @@ function App() {
               )}
 
               <button
-                onClick={async () => {
-                  if (selectedCategories.length !== 3) return
-                  await handleSpin()
-                }}
-                disabled={selectedCategories.length !== 3}
+                onClick={handleGoToSpinner}
+                disabled={selectedCategories.length !== 3 || isLoading}
                 style={{
                   width: '100%',
                   height: 54,
@@ -763,7 +841,7 @@ function App() {
                   cursor: selectedCategories.length === 3 ? 'pointer' : 'default',
                 }}
               >
-                Далее
+                {isLoading ? 'Секунду...' : 'Далее'}
               </button>
 
               <button
@@ -824,7 +902,10 @@ function App() {
                 ref={spinnerRef}
                 categories={selectedCategories}
                 canSpin={canSpin}
-                onFinish={() => setScreen('result')}
+                onFinish={() => {
+                  setIsLoading(false)
+                  setScreen('result')
+                }}
               />
             </div>
 
@@ -850,20 +931,47 @@ function App() {
               />
             </div>
 
-            <div style={{ flexShrink: 0 }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                flexShrink: 0,
+              }}
+            >
               <button
-                onClick={() => spinnerRef.current?.spin()}
+                onClick={handleSpin}
+                disabled={isLoading || !canSpin}
                 style={{
                   width: '100%',
                   height: 54,
                   borderRadius: 40,
                   border: 'none',
-                  background: '#1C1C1F',
+                  background: isLoading || !canSpin ? '#C7C7CC' : '#1C1C1F',
                   color: '#FFFFFF',
                   fontSize: 18,
+                  cursor: isLoading || !canSpin ? 'default' : 'pointer',
                 }}
               >
-                Крутить
+                {isLoading ? 'Крутим...' : 'Крутить'}
+              </button>
+
+              <button
+                onClick={() => setScreen('categories')}
+                disabled={isLoading}
+                style={{
+                  width: '100%',
+                  height: 52,
+                  borderRadius: 40,
+                  border: '1px solid #1C1C1C',
+                  background: '#FFFFFF',
+                  color: '#1C1C1F',
+                  fontSize: 16,
+                  opacity: isLoading ? 0.5 : 1,
+                  cursor: isLoading ? 'default' : 'pointer',
+                }}
+              >
+                Назад
               </button>
             </div>
           </div>
