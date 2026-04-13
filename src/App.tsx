@@ -148,9 +148,7 @@ function App() {
 
   try {
     if (navigator.share) {
-      await navigator.share({
-        url: appUrl,
-      })
+      await navigator.share({ url: appUrl })
       return
     }
 
