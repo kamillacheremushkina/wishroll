@@ -2,13 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from './lib/supabase'
 import { vibes } from './constants/vibes'
 import { categories } from './constants/categories'
+import { vibeCriteriaMap, getPriorityTier } from './constants/vibeCriteria'
 import PlaceCard from './components/PlaceCard'
 import SlotSpinner from './components/SlotSpinner'
-import heroText from './assets/hero-text.svg'
-import heroWheel from './assets/hero-wheel.svg'
+import logoTxt from './assets/logo-txt.svg'
+import cityImage from './assets/hero-city.svg'
 import rulesWheel from './assets/rules-wheel.svg'
 import rulesImage from './assets/rules-image.svg'
-import categoriesImage from './assets/categories-image.svg'
 import spinImage from './assets/spin-image.svg'
 
 
@@ -72,6 +72,59 @@ function App() {
   const [uid, setUid] = useState<string | null>(null)
   const spinnerRef = useRef<any>(null)
 
+
+  function scorePlaceForVibe(placeCriteria: string[], vibeKey: string) {
+    const vibeConfig = vibeCriteriaMap[vibeKey as keyof typeof vibeCriteriaMap]
+
+    if (!vibeConfig) {
+      return {
+        positiveMatches: 0,
+        antiMatches: 0,
+        priorityTier: 0,
+        matchPercent: 0,
+      }
+    }
+
+    const positiveCriteria = [...vibeConfig.positive] as string[]
+    const antiCriteria = [...vibeConfig.anti] as string[]
+
+    const positiveMatches = placeCriteria.filter((criterion) =>
+      positiveCriteria.includes(criterion)
+    ).length
+
+    const antiMatches = placeCriteria.filter((criterion) =>
+      antiCriteria.includes(criterion)
+    ).length
+
+    const priorityTier = getPriorityTier(positiveMatches, antiMatches)
+
+    const totalPositive = positiveCriteria.length || 1
+    const rawPercent = Math.round((positiveMatches / totalPositive) * 100 - antiMatches * 15)
+    const matchPercent = Math.max(0, Math.min(100, rawPercent))
+
+    return {
+      positiveMatches,
+      antiMatches,
+      priorityTier,
+      matchPercent,
+    }
+  }
+
+  function comparePlacesByVibeScore(
+    a: { positiveMatches: number; antiMatches: number; priorityTier: number },
+    b: { positiveMatches: number; antiMatches: number; priorityTier: number }
+  ) {
+    if (b.priorityTier !== a.priorityTier) {
+      return b.priorityTier - a.priorityTier
+    }
+
+    if (b.positiveMatches !== a.positiveMatches) {
+      return b.positiveMatches - a.positiveMatches
+    }
+
+    return a.antiMatches - b.antiMatches
+  }
+
   async function loadUserSpins(currentUid: string) {
     const { data, error } = await supabase
       .from('users')
@@ -118,15 +171,15 @@ function App() {
     screen === 'result'
 
   async function getPlacesForSpin() {
-    if (!selectedVibe || selectedCategories.length !== 3) {
+    if (!selectedVibe || selectedCategories.length < 1 || selectedCategories.length > 3) {
       return null
     }
 
     const { data, error } = await supabase
-      .from('places')
+      .from('places_v2')
       .select('*')
       .in('category', selectedCategories)
-      .contains('vibes', [selectedVibe])
+      .eq('is_active', true)
 
     if (error) {
       console.error(error)
@@ -145,8 +198,30 @@ function App() {
         return null
       }
 
-      const randomIndex = Math.floor(Math.random() * categoryPlaces.length)
-      const pickedPlace = categoryPlaces[randomIndex]
+      const scoredPlaces = categoryPlaces
+        .map((place) => {
+          const score = scorePlaceForVibe(place.criteria ?? [], selectedVibe)
+
+          return {
+            ...place,
+            ...score,
+          }
+        })
+        .sort(comparePlacesByVibeScore)
+
+      const strongMatches = scoredPlaces.filter((place) => place.matchPercent >= 65)
+      const closeMatches = scoredPlaces.filter((place) => place.matchPercent >= 45)
+
+      const pool =
+        strongMatches.length > 0
+          ? strongMatches
+          : closeMatches.length > 0
+            ? closeMatches
+            : scoredPlaces
+
+      const topPool = pool.slice(0, Math.min(3, pool.length))
+      const randomIndex = Math.floor(Math.random() * topPool.length)
+      const pickedPlace = topPool[randomIndex]
 
       resultPlaces.push(pickedPlace)
     }
@@ -160,6 +235,19 @@ function App() {
     loadUserSpins(id)
   }, [])
 
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible' && uid) {
+        loadUserSpins(uid)
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [uid])
 
   useEffect(() => {
     if (!spinErrorMessage) return
@@ -195,7 +283,7 @@ function App() {
   }
 
   async function handleGoToSpinner() {
-    if (selectedCategories.length !== 3) return
+    if (selectedCategories.length < 1 || selectedCategories.length > 3) return
 
     setSpinErrorMessage('')
     setIsLoading(true)
@@ -329,7 +417,6 @@ function App() {
               flexDirection: 'column',
             }}
           >
-            {/* TEXT */}
             <div
               style={{
                 flexShrink: 0,
@@ -337,41 +424,37 @@ function App() {
                 paddingTop: 'clamp(45px, 6vh, 60px)',
               }}
             >
-              <div
+              <img
+                src={logoTxt}
+                alt="ВШРОЛЛ"
                 style={{
-                  fontSize: 'clamp(28px, 8vw, 42px)',
-                  fontWeight: 600,
-                  lineHeight: 0.95,
-                  color: '#FFFFFF',
-                  marginBottom: 14,
-                  maxWidth: 320,
-                  marginLeft: 'auto',
-                  marginRight: 'auto',
+                  width: '100%',
+                  maxWidth: 283,
+                  height: 'auto',
+                  margin: '0 auto 28px',
                 }}
-              >
-                Отрывай город заново
-              </div>
+              />
 
               <div
                 style={{
-                  fontSize: 'clamp(15px, 4.2vw, 20px)',
-                  lineHeight: 1.35,
+                  fontSize: 'clamp(28px, 7vw, 30px)',
+                  fontWeight: 500,
+                  lineHeight: 1.2,
                   color: '#FFFFFF',
-                  maxWidth: 340,
-                  marginLeft: 'auto',
-                  marginRight: 'auto',
+                  maxWidth: 347,
+                  margin: '0 auto',
                 }}
               >
-                Никакого бесконечного скроллинга. Твои желания, один поворот рулетки и можно выходить навстречу новому. Играй в город с нами.
+                Не думай — крути
+                <br />
+                город уже всё решил
               </div>
             </div>
 
-            {/* IMAGES */}
             <div
               style={{
                 flex: 1,
                 minHeight: 0,
-                position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -380,39 +463,18 @@ function App() {
               }}
             >
               <img
-                src={heroText}
+                src={cityImage}
                 alt=""
                 style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: '240%',
-                  minWidth: 600,
-                  maxWidth: 1000,
-                  height: 'auto',
-                  pointerEvents: 'none',
-                  zIndex: 0,
-                }}
-              />
-
-              <img
-                src={heroWheel}
-                className="hero-wheel"
-                alt="wheel"
-                style={{
-                  position: 'relative',
                   width: '100%',
-                  maxWidth: 380,
-                  maxHeight: '100%',
+                  maxWidth: 660,
+                  height: 'auto',
                   objectFit: 'contain',
                   pointerEvents: 'none',
-                  zIndex: 1,
                 }}
               />
             </div>
 
-            {/* BUTTONS */}
             <div
               style={{
                 flexShrink: 0,
@@ -422,6 +484,19 @@ function App() {
                 paddingBottom: 4,
               }}
             >
+              <div
+                style={{
+                  fontSize: 15,
+                  lineHeight: 1.2,
+                  fontWeight: 500,
+                  textAlign: 'center',
+                  color: 'rgba(255,255,255,0.5)',
+                  marginBottom: 0,
+                }}
+              >
+                Попробуй особый сценарий
+              </div>
+
               <button
                 onClick={() => setScreen('rules')}
                 style={{
@@ -435,7 +510,7 @@ function App() {
                   cursor: 'pointer',
                 }}
               >
-                Читать правила
+                Персонаж дня
               </button>
 
               <button
@@ -451,7 +526,7 @@ function App() {
                   cursor: 'pointer',
                 }}
               >
-                Начать
+                Начать игру
               </button>
             </div>
           </div>
@@ -595,7 +670,7 @@ function App() {
                 flexShrink: 0,
               }}
             >
-              На каком вайбе ты сегодня?
+              Каждому настроению свой маршрут
             </div>
 
             <div
@@ -609,7 +684,7 @@ function App() {
                 flexShrink: 0,
               }}
             >
-              Долго не можешь выбрать место для прогулки? Доверься судьбе. Выбирай...
+              Выбери свое, и фортуна откроет, куда тебе отправиться сегодня...
             </div>
 
             <div
@@ -706,86 +781,85 @@ function App() {
           >
             <div
               style={{
-                fontSize: 28,
-                fontWeight: 600,
-                textAlign: 'center',
-                marginBottom: 10,
-                color: '#1C1C1F',
-                flexShrink: 0,
-              }}
-            >
-              Куда пойдешь сегодня?
-            </div>
-
-            <div
-              style={{
-                fontSize: 14,
-                lineHeight: 1.4,
-                textAlign: 'center',
-                color: '#1C1C1F',
-                marginBottom: 18,
-                padding: '0 6px',
-                flexShrink: 0,
-              }}
-            >
-              А теперь 3 категории, и рулетка решит все за несколько секунд...
-            </div>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: 10,
-                flexShrink: 0,
-              }}
-            >
-              {categories.map((category) => {
-                const isActive = selectedCategories.includes(category.value)
-
-                return (
-                  <button
-                    key={category.value}
-                    onClick={() => toggleCategory(category.value)}
-                    style={{
-                      height: 44,
-                      borderRadius: 30,
-                      border: isActive ? '1px solid #125BEC' : '1px solid #1C1C1F',
-                      background: isActive ? '#125BEC' : '#FFFFFF',
-                      color: isActive ? '#FFFFFF' : '#1C1C1F',
-                      fontSize: 15,
-                      fontWeight: 500,
-                    }}
-                  >
-                    {category.label}
-                  </button>
-                )
-              })}
-            </div>
-
-            <div
-              style={{
                 flex: 1,
-                minHeight: 90,
-                display: 'flex',
-                alignItems: 'flex-end',
-                justifyContent: 'center',
-                paddingTop: 12,
-                paddingBottom: 8,
+                minHeight: 0,
+                overflowY: 'auto',
+                paddingBottom: 24,
               }}
             >
-              <img
-                src={categoriesImage}
-                alt=""
+              <div
                 style={{
-                  width: '70%',
-                  maxWidth: 300,
-                  maxHeight: '100%',
-                  objectFit: 'contain',
+                  fontSize: 28,
+                  fontWeight: 600,
+                  textAlign: 'center',
+                  marginBottom: 10,
+                  color: '#1C1C1F',
+                  flexShrink: 0,
                 }}
-              />
+              >
+                Все дороги ведут...
+              </div>
+
+              <div
+                style={{
+                  fontSize: 14,
+                  lineHeight: 1.4,
+                  textAlign: 'center',
+                  color: '#1C1C1F',
+                  marginBottom: 18,
+                  padding: '0 6px',
+                  flexShrink: 0,
+                }}
+              >
+                Выбери до 3 категорий, а дальше будет видно...
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 10,
+                  flexShrink: 0,
+                }}
+              >
+                {categories.map((category) => {
+                  const isActive = selectedCategories.includes(category.value)
+
+                  return (
+                    <button
+                      key={category.value}
+                      onClick={() => toggleCategory(category.value)}
+                      style={{
+                        minHeight: 44,
+                        borderRadius: 30,
+                        border: isActive ? '1px solid #125BEC' : '1px solid #1C1C1F',
+                        background: isActive ? '#125BEC' : '#FFFFFF',
+                        color: isActive ? '#FFFFFF' : '#1C1C1F',
+                        fontSize: 15,
+                        fontWeight: 500,
+                        padding: '10px 12px',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {category.label}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  justifyContent: 'center',
+                  paddingTop: 20,
+                  paddingBottom: 8,
+                }}
+              >
+
+              </div>
             </div>
 
-            {/* BUTTONS CONTAINER: Now relative to anchor the notification */}
             <div
               style={{
                 position: 'relative',
@@ -793,9 +867,9 @@ function App() {
                 flexDirection: 'column',
                 gap: 10,
                 flexShrink: 0,
+                paddingTop: 8,
               }}
             >
-              {/* NOTIFICATION OVERLAY: Anchored to the top of the button container */}
               {spinErrorMessage && (
                 <div
                   style={{
@@ -803,10 +877,10 @@ function App() {
                     bottom: '100%',
                     left: 0,
                     width: '100%',
-                    paddingBottom: 12, // 12px gap above the Next button
+                    paddingBottom: 12,
                     display: 'flex',
                     justifyContent: 'center',
-                    pointerEvents: 'none', // Ensures it doesn't block clicks
+                    pointerEvents: 'none',
                     zIndex: 10,
                   }}
                 >
@@ -828,7 +902,7 @@ function App() {
 
               <button
                 onClick={handleGoToSpinner}
-                disabled={selectedCategories.length !== 3 || isLoading}
+                disabled={selectedCategories.length < 1 || selectedCategories.length > 3 || isLoading}
                 style={{
                   width: '100%',
                   height: 54,
@@ -837,8 +911,8 @@ function App() {
                   background: '#1C1C1F',
                   color: '#FFFFFF',
                   fontSize: 18,
-                  opacity: selectedCategories.length === 3 ? 1 : 0.5,
-                  cursor: selectedCategories.length === 3 ? 'pointer' : 'default',
+                  opacity: selectedCategories.length >= 1 && selectedCategories.length <= 3 ? 1 : 0.5,
+                  cursor: selectedCategories.length >= 1 && selectedCategories.length <= 3 ? 'pointer' : 'default',
                 }}
               >
                 {isLoading ? 'Секунду...' : 'Далее'}

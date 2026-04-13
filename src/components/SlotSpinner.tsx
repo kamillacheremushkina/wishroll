@@ -1,12 +1,4 @@
 import { useRef, useState, forwardRef, useImperativeHandle } from 'react'
-import foodIcon from '../assets/еда.svg'
-import barsIcon from '../assets/бары.svg'
-import cultureIcon from '../assets/культура.svg'
-import shoppingIcon from '../assets/шоппинг.svg'
-import coworkIcon from '../assets/ко_ворк.svg'
-import walksIcon from '../assets/пешие_прогулки.svg'
-import funIcon from '../assets/развлечение.svg'
-import nightlifeIcon from '../assets/ночная_жизнь.svg'
 
 type SlotSpinnerProps = {
   categories: number[]
@@ -14,23 +6,14 @@ type SlotSpinnerProps = {
   canSpin: boolean
 }
 
-const categoryImages: Record<number, string> = {
-  1: foodIcon,
-  2: barsIcon,
-  3: cultureIcon,
-  4: shoppingIcon,
-  5: coworkIcon,
-  6: walksIcon,
-  7: funIcon,
-  8: nightlifeIcon,
-}
+const slotLabels = ['1', '2', '3']
 
-function shuffle(arr: number[]) {
+function shuffle(arr: string[]) {
   return [...arr].sort(() => Math.random() - 0.5)
 }
 
 const SlotSpinner = forwardRef(
-  ({ categories, onFinish, canSpin }: SlotSpinnerProps, ref) => {
+  ({ onFinish }: SlotSpinnerProps, ref) => {
     const doorsRef = useRef<HTMLDivElement[]>([])
     const [isSpinning, setIsSpinning] = useState(false)
 
@@ -38,39 +21,32 @@ const SlotSpinner = forwardRef(
       if (isSpinning) return
       setIsSpinning(true)
 
-      const allCategories = Object.keys(categoryImages).map(Number)
-
       for (let i = 0; i < doorsRef.current.length; i++) {
         const door = doorsRef.current[i]
         const boxes = door.querySelector('.boxes')
 
         if (!boxes || !(boxes instanceof HTMLDivElement)) continue
 
-        let pool = shuffle(allCategories)
-        pool = pool.filter((cat) => cat !== categories[i])
-        pool.push(categories[i])
+        let pool = shuffle(slotLabels)
+        pool.push(slotLabels[i])
 
         boxes.innerHTML = ''
 
-        pool.forEach((cat) => {
+        pool.forEach((label) => {
           const el = document.createElement('div')
-          // Force strict dimensions so the translation math is perfect
           el.style.width = '100%'
           el.style.height = '100%'
           el.style.flexShrink = '0'
           el.style.display = 'flex'
           el.style.alignItems = 'center'
           el.style.justifyContent = 'center'
-          el.style.padding = '20%' // Inner spacing for icons
           el.style.boxSizing = 'border-box'
+          el.style.fontSize = '40px'
+          el.style.fontWeight = '700'
+          el.style.lineHeight = '1'
+          el.style.color = '#1C1C1F'
+          el.textContent = label
 
-          const img = document.createElement('img')
-          img.src = categoryImages[cat]
-          img.style.width = '100%'
-          img.style.height = '100%'
-          img.style.objectFit = 'contain'
-
-          el.appendChild(img)
           boxes.appendChild(el)
         })
 
@@ -87,7 +63,10 @@ const SlotSpinner = forwardRef(
       }
 
       setTimeout(() => {
-        setTimeout(onFinish, 1000)
+        setTimeout(() => {
+          setIsSpinning(false)
+          onFinish()
+        }, 1000)
       }, 5600)
     }
 
@@ -97,7 +76,15 @@ const SlotSpinner = forwardRef(
 
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <div style={{ display: 'flex', gap: '4%', width: '100%', maxWidth: 340, justifyContent: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '4%',
+            width: '100%',
+            maxWidth: 340,
+            justifyContent: 'center',
+          }}
+        >
           {[0, 1, 2].map((i) => (
             <div
               key={i}
@@ -106,18 +93,18 @@ const SlotSpinner = forwardRef(
               }}
               style={{
                 flex: 1,
-                aspectRatio: '1 / 1', // Perfect square regardless of screen width
+                aspectRatio: '1 / 1',
                 maxWidth: 100,
-                overflow: 'hidden',   // Masks the spinning track
+                overflow: 'hidden',
                 borderRadius: 20,
-                background: '#fff',
+                background: '#FFFFFF',
                 position: 'relative',
               }}
             >
               <div
                 className="boxes"
                 style={{
-                  height: '100%', // Each child will match this height
+                  height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
                   willChange: 'transform',

@@ -2,14 +2,11 @@ export type Place = {
   id: number
   title: string
   description: string
-  latitude: number
-  longitude: number
   address: string
-  open_time: string
-  close_time: string
-  rating: number
+  avg_price: number
   category: number
-  vibes: string[]
+  criteria: string[]
   image_url?: string | null
   is_active?: boolean | null
+  created_at?: string
 }

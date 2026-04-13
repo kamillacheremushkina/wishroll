@@ -1,8 +1,8 @@
 export const vibes = [
-  { value: 'драйв', label: 'Драйв' },
-  { value: 'чилл', label: 'Чилл' },
-  { value: 'перезагрузка', label: 'Перезагрузка' },
-  { value: 'продуктивность', label: 'Продуктивность' },
-  { value: 'позитив', label: 'Позитив' },
-  { value: 'вдохновение', label: 'Вдохновение' },
+  { value: 'razryaditsya', label: 'Разрядиться' },
+  { value: 'vosstanovitsya', label: 'Восстановиться' },
+  { value: 'zabitsya', label: 'Забыться' },
+  { value: 'rasslabitsya', label: 'Расслабиться' },
+  { value: 'vdohnovitsya', label: 'Вдохновиться' },
+  { value: 'siyat', label: 'Сиять' },
 ]
