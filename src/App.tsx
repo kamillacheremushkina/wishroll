@@ -144,26 +144,22 @@ function App() {
   }
 
   async function handleShareApp() {
-    const appUrl = 'https://wishroll.vercel.app/'
+  const appUrl = 'https://wishroll.vercel.app/'
 
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: 'WishRoll — выбери место для прогулки',
-          text: 'Открой WishRoll и выбери место для прогулки за пару секунд.',
-          url: appUrl,
-        })
-        return
-      }
-
-      await navigator.clipboard.writeText(
-        'WishRoll — выбери место для прогулки\nhttps://wishroll.vercel.app/'
-      )
-      alert('Текст и ссылка скопированы')
-    } catch (error) {
-      console.error(error)
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        url: appUrl,
+      })
+      return
     }
+
+    await navigator.clipboard.writeText(appUrl)
+    alert('Ссылка скопирована')
+  } catch (error) {
+    console.error(error)
   }
+}
 
 
   const showSpinsBadge =
