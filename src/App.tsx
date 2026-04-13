@@ -144,20 +144,22 @@ function App() {
   }
 
   async function handleShareApp() {
-    const appUrl = window.location.origin
+    const appUrl = 'https://wishroll.vercel.app/'
 
     try {
       if (navigator.share) {
         await navigator.share({
-          title: 'WishRoll',
-          text: 'Открой WishRoll и выбери место для прогулки',
+          title: 'WishRoll — выбери место для прогулки',
+          text: 'Открой WishRoll и выбери место для прогулки за пару секунд.',
           url: appUrl,
         })
         return
       }
 
-      await navigator.clipboard.writeText(appUrl)
-      alert('Ссылка на приложение скопирована')
+      await navigator.clipboard.writeText(
+        'WishRoll — выбери место для прогулки\nhttps://wishroll.vercel.app/'
+      )
+      alert('Текст и ссылка скопированы')
     } catch (error) {
       console.error(error)
     }
