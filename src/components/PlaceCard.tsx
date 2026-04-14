@@ -168,7 +168,7 @@ function PlaceCard({ place, onCopy }: PlaceCardProps) {
         }}
       >
         <img
-          src="/map_pin.svg"
+          src="/copy_pin.svg"
           alt="map"
           style={{
             width: 20,
