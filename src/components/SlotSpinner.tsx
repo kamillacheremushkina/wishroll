@@ -1,15 +1,31 @@
 import { useRef, useState, forwardRef, useImperativeHandle } from 'react'
 
+import bridgeImg from '../assets/spinner/bridge.svg'
+import isaacImg from '../assets/spinner/isaac.svg'
+import lightImg from '../assets/spinner/light.svg'
+import petropavlovImg from '../assets/spinner/petropavlov.svg'
+import statueImg from '../assets/spinner/statue.svg'
+
 type SlotSpinnerProps = {
   categories: number[]
   onFinish: () => void
   canSpin: boolean
 }
 
-const slotLabels = ['1', '2', '3']
+const spinnerImages = [
+  bridgeImg,
+  isaacImg,
+  lightImg,
+  petropavlovImg,
+  statueImg,
+]
 
-function shuffle(arr: string[]) {
+function shuffle<T>(arr: T[]) {
   return [...arr].sort(() => Math.random() - 0.5)
+}
+
+function pickRandom<T>(arr: T[]) {
+  return arr[Math.floor(Math.random() * arr.length)]
 }
 
 const SlotSpinner = forwardRef(({ onFinish }: SlotSpinnerProps, ref) => {
@@ -18,7 +34,10 @@ const SlotSpinner = forwardRef(({ onFinish }: SlotSpinnerProps, ref) => {
 
   async function spin() {
     if (isSpinning) return
+
     setIsSpinning(true)
+
+    const winningImage = pickRandom(spinnerImages)
 
     for (let i = 0; i < doorsRef.current.length; i++) {
       const door = doorsRef.current[i]
@@ -26,25 +45,38 @@ const SlotSpinner = forwardRef(({ onFinish }: SlotSpinnerProps, ref) => {
 
       if (!boxes || !(boxes instanceof HTMLDivElement)) continue
 
-      const pool = shuffle(slotLabels)
-      pool.push(slotLabels[i])
+      const cyclesCount = 4 + i
+      let pool: string[] = []
+
+      for (let cycle = 0; cycle < cyclesCount; cycle++) {
+        pool.push(...shuffle(spinnerImages))
+      }
+
+      pool.push(winningImage)
 
       boxes.innerHTML = ''
 
-      pool.forEach((label) => {
+      pool.forEach((imageSrc) => {
         const el = document.createElement('div')
         el.style.width = '100%'
         el.style.height = '100%'
         el.style.flexShrink = '0'
         el.style.display = 'flex'
-        el.style.alignItems = 'center'
+        el.style.alignItems = 'flex-end'
         el.style.justifyContent = 'center'
         el.style.boxSizing = 'border-box'
-        el.style.fontSize = 'clamp(24px, 7vw, 44px)'
-        el.style.fontWeight = '700'
-        el.style.lineHeight = '1'
-        el.style.color = '#125BEC'
-        el.textContent = label
+        el.style.padding = '12% 10% 4%'
+
+        const img = document.createElement('img')
+        img.src = imageSrc
+        img.alt = ''
+        img.style.width = '100%'
+        img.style.height = '100%'
+        img.style.objectFit = 'contain'
+        img.style.display = 'block'
+        img.draggable = false
+
+        el.appendChild(img)
         boxes.appendChild(el)
       })
 
@@ -73,18 +105,14 @@ const SlotSpinner = forwardRef(({ onFinish }: SlotSpinnerProps, ref) => {
   }))
 
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-      }}
-    >
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
       <div
         style={{
-          width: '100%',
-          height: '100%',
           display: 'flex',
-          justifyContent: 'space-between',
+          gap: '4%',
+          width: '100%',
+          maxWidth: 340,
+          justifyContent: 'center',
         }}
       >
         {[0, 1, 2].map((i) => (
@@ -94,17 +122,17 @@ const SlotSpinner = forwardRef(({ onFinish }: SlotSpinnerProps, ref) => {
               if (el) doorsRef.current[i] = el
             }}
             style={{
-              width: '30.6%',
-              height: '100%',
+              flex: 1,
+              aspectRatio: '9 / 16',
               overflow: 'hidden',
               borderRadius: 12,
-              background: '#FFFFFF',
-              flexShrink: 0,
+              position: 'relative',
             }}
           >
             <div
               className="boxes"
               style={{
+                width: '100%',
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',

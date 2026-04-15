@@ -36,6 +36,7 @@ type Place = {
   category: number
   avg_price: number
   matchPercent?: number
+  resultBadgeLabel?: string
 }
 
 type PlaceCardProps = {
@@ -85,7 +86,7 @@ function PlaceCard({ place, onCopy }: PlaceCardProps) {
           top: 12,
           left: 12,
           background: '#FFFFFF',
-          color: '#1C1C1F',
+          color: '#125BEC',
           padding: '4px 10px',
           borderRadius: 14,
           fontSize: 12,
@@ -122,11 +123,26 @@ function PlaceCard({ place, onCopy }: PlaceCardProps) {
           {categoryMap[place.category] ?? 'Категория'}
         </div>
 
-        {typeof place.matchPercent === 'number' && (
+        {place.resultBadgeLabel ? (
           <div
             style={{
               background: 'rgba(255,255,255,0.92)',
-              color: '#1C1C1F',
+              color: '#125BEC',
+              padding: '4px 10px',
+              borderRadius: 14,
+              fontSize: 12,
+              fontWeight: 500,
+              textAlign: 'center',
+              lineHeight: 1.2,
+            }}
+          >
+            {place.resultBadgeLabel}
+          </div>
+        ) : typeof place.matchPercent === 'number' ? (
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.92)',
+              color: '#125BEC',
               padding: '4px 10px',
               borderRadius: 14,
               fontSize: 12,
@@ -137,7 +153,7 @@ function PlaceCard({ place, onCopy }: PlaceCardProps) {
           >
             Совпадение: {place.matchPercent}%
           </div>
-        )}
+        ) : null}
       </div>
 
       <div
