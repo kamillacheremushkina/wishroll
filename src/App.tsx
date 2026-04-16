@@ -716,6 +716,7 @@ function App() {
 
               <button
                 onClick={() => {
+                  ym(108576559,'reachGoal','start_game_click')
                   setMode('manual')
                   setSelectedCharacterId(null)
                   setCharacterPlacesCount(0)
