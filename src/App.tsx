@@ -211,6 +211,18 @@ function App() {
     }
   }
 
+  async function trackEvent(eventName: string, eventData: Record<string, any> = {}) {
+    try {
+      await supabase.from('events').insert({
+        uid,
+        event_name: eventName,
+        event_data: eventData,
+      })
+    } catch (error) {
+      console.error('Analytics error:', error)
+    }
+  }
+
   function getCharacterById(characterId: string) {
     return characters.find((character) => character.id === characterId) ?? null
   }
@@ -458,6 +470,11 @@ function App() {
   function handleGoToSpinner() {
     if (selectedCategories.length < 1 || selectedCategories.length > 3) return
 
+    trackEvent('categories_selected', {
+      categories: selectedCategories,
+      count: selectedCategories.length,
+    })
+
     setSpinErrorMessage('')
     setScreen('spinner')
   }
@@ -466,6 +483,12 @@ function App() {
     setSpinErrorMessage('')
     setIsLoading(true)
     ym(108576559, 'reachGoal', 'spin_started')
+    trackEvent('spin_started', {
+      categories: selectedCategories,
+      count: selectedCategories.length,
+      vibe: selectedVibe,
+    })
+
 
     const spinsToUse =
       mode === 'character' ? characterPlacesCount : selectedCategories.length
@@ -720,7 +743,7 @@ function App() {
 
               <button
                 onClick={() => {
-                  ym(108576559,'reachGoal','start_game_click')
+                  ym(108576559, 'reachGoal', 'start_game_click')
                   setMode('manual')
                   setSelectedCharacterId(null)
                   setCharacterPlacesCount(0)
@@ -1160,7 +1183,10 @@ function App() {
                   return (
                     <button
                       key={vibe.value}
-                      onClick={() => setSelectedVibe(vibe.value)}
+                      onClick={() => {
+                        setSelectedVibe(vibe.value)
+                        trackEvent('vibe_selected', { vibe: vibe.value })
+                      }}
                       style={{
                         flex: '1 1 auto',
                         minWidth: '35%',
