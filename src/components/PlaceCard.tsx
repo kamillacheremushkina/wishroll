@@ -53,6 +53,7 @@ function truncateText(text: string, maxLength: number) {
 function PlaceCard({ place, onCopy }: PlaceCardProps) {
   const handleCopy = async () => {
     await navigator.clipboard.writeText(place.address)
+    ym(108576559, 'reachGoal', 'address_copied')
     onCopy()
   }
 

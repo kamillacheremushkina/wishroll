@@ -200,6 +200,7 @@ function App() {
     try {
       if (navigator.share) {
         await navigator.share({ url: appUrl })
+        ym(108576559, 'reachGoal', 'share_click')
         return
       }
 
@@ -222,6 +223,7 @@ function App() {
   }
 
   function handleOpenWeeklyCharacter() {
+    ym(108576559, 'reachGoal', 'weekly_character_open')
     setMode('character')
     setSelectedCharacterId(WEEKLY_CHARACTER_ID)
     setCharacterPlacesCount(0)
@@ -463,6 +465,7 @@ function App() {
   async function handleSpin() {
     setSpinErrorMessage('')
     setIsLoading(true)
+    ym(108576559, 'reachGoal', 'spin_started')
 
     const spinsToUse =
       mode === 'character' ? characterPlacesCount : selectedCategories.length
@@ -480,6 +483,7 @@ function App() {
 
     if (!resultPlaces) {
       setPlaces([])
+      ym(108576559, 'reachGoal', 'spin_error_no_places')
       setSpinErrorMessage('К сожалению, у нас пока нет подходящих мест для этого сценария')
       setIsLoading(false)
       return
@@ -1489,6 +1493,7 @@ function App() {
                       canSpin={canSpin}
                       onFinish={() => {
                         setIsLoading(false)
+                        ym(108576559, 'reachGoal', 'result_shown')
                         setScreen('result')
                       }}
                     />
