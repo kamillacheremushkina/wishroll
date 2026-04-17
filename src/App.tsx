@@ -213,11 +213,17 @@ function App() {
 
   async function trackEvent(eventName: string, eventData: Record<string, any> = {}) {
     try {
-      await supabase.from('events').insert({
-        uid,
+      const currentUid = uid || getOrCreateUID()
+
+      const { error } = await supabase.from('events').insert({
+        uid: currentUid,
         event_name: eventName,
         event_data: eventData,
       })
+
+      if (error) {
+        console.error('Analytics error:', error)
+      }
     } catch (error) {
       console.error('Analytics error:', error)
     }
