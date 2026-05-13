@@ -5,6 +5,7 @@ import { categories } from './constants/categories'
 import { vibeCriteriaMap, getPriorityTier } from './constants/vibeCriteria'
 import PlaceCard from './components/PlaceCard'
 import SlotSpinner from './components/SlotSpinner'
+import CoinAlert from './components/CoinAlert'
 import logoTxt from './assets/logo-txt.svg'
 import cityImage from './assets/hero-city.svg'
 import rulesImage from './assets/rules-image.svg'
@@ -12,6 +13,7 @@ import coinImg from './assets/coin-img.svg'
 import shareImg from './assets/share-img.svg'
 import slotMachineImg from './assets/slot-machine.svg'
 import { characters, WEEKLY_CHARACTER_ID, type Character } from './constants/characters'
+
 
 const DAILY_SPINS = 9
 const screenBackground = '#FFFFFF'
@@ -79,7 +81,7 @@ function App() {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([])
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null)
   const [screen, setScreen] = useState<
-    'start' | 'characterIntro' | 'characterSetup' | 'vibe' | 'categories' | 'spinner' | 'result'
+    'start' | 'rules' | 'characterIntro' | 'characterSetup' | 'vibe' | 'categories' | 'spinner' | 'result'
   >('start')
   const [isLoading, setIsLoading] = useState(false)
   const [spinsLeft, setSpinsLeft] = useState<number | null>(null)
@@ -94,6 +96,15 @@ function App() {
   const [selectedCharacterPhrase, setSelectedCharacterPhrase] = useState('')
 
   const spinnerRef = useRef<any>(null)
+
+  const [coinAlertMessage, setCoinAlertMessage] = useState<string | null>(null)
+
+  const handleCoinClick = () => {
+    setCoinAlertMessage('Баланс монет обновлён!')
+    ym(108576559, 'reachGoal', 'coin_clicked') // трекинг клика
+  }
+
+  const closeCoinAlert = () => setCoinAlertMessage(null)
 
   const selectedCharacter =
     characters.find((character) => character.id === selectedCharacterId) ?? null
@@ -574,6 +585,7 @@ function App() {
               paddingLeft: 18,
               pointerEvents: 'auto',
             }}
+            onClick={handleCoinClick}
           >
             <div
               style={{
@@ -639,6 +651,10 @@ function App() {
             />
           </button>
         </div>
+      )}
+
+      {coinAlertMessage && (
+        <CoinAlert onClose={closeCoinAlert} />
       )}
 
       {screen === 'start' && (
@@ -718,18 +734,21 @@ function App() {
                 paddingBottom: 4,
               }}
             >
-              <div
+              <button
+                onClick={() => setScreen('rules')}
                 style={{
-                  fontSize: 15,
-                  lineHeight: 1.2,
-                  fontWeight: 500,
-                  textAlign: 'center',
-                  color: 'rgba(255,255,255,0.5)',
-                  marginBottom: 0,
+                  width: '100%',
+                  height: 54,
+                  borderRadius: 40,
+                  border: '1px solid #ffffff',
+                  background: '#125BEC',
+                  color: '#ffffff',
+                  fontSize: 16,
+                  cursor: 'pointer',
                 }}
               >
-                Попробуй особый сценарий
-              </div>
+                Правила игры
+              </button>
 
               <button
                 onClick={handleOpenWeeklyCharacter}
@@ -737,10 +756,10 @@ function App() {
                   width: '100%',
                   height: 54,
                   borderRadius: 40,
-                  border: 'none',
-                  background: '#FFFFFF',
-                  color: '#1C1C1F',
-                  fontSize: 18,
+                  border: '1px solid #ffffff',
+                  background: '#125BEC',
+                  color: '#ffffff',
+                  fontSize: 16,
                   cursor: 'pointer',
                 }}
               >
@@ -761,15 +780,161 @@ function App() {
                   height: 54,
                   borderRadius: 40,
                   border: 'none',
-                  background: '#1C1C1F',
-                  color: '#FFFFFF',
-                  fontSize: 18,
+                  background: '#ffffff',
+                  color: '#1C1C1F',
+                  fontSize: 16,
                   cursor: 'pointer',
                 }}
               >
                 Начать игру
               </button>
             </div>
+          </div>
+        </MobileScreen>
+      )}
+
+      {screen === 'rules' && (
+        <MobileScreen background="#125BEC">
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0, // Обязательно, чтобы flex-дочка могла скроллиться
+              display: 'flex',
+              flexDirection: 'column',
+              paddingTop: '3vh', // Небольшой отступ сверху
+              paddingBottom: 8, // Отступ снизу под кнопкой
+              gap: 16, // Расстояние между белым блоком и кнопкой
+            }}
+          >
+            {/* Белый контейнер с текстом */}
+            <div
+              style={{
+                flex: 1, // Занимает всё доступное пространство над кнопкой
+                minHeight: 0, // Позволяет внутреннему контенту скроллиться
+                background: '#FFFFFF',
+                borderRadius: 24,
+                padding: '15px 12px',
+                display: 'flex',
+                flexDirection: 'column',
+                boxSizing: 'border-box',
+              }}
+            >
+              {/* Зафиксированный заголовок */}
+              <div
+                style={{
+                  fontWeight: 700,
+                  fontSize: 25,
+                  lineHeight: '36px',
+                  textAlign: 'center',
+                  color: '#1C1C1F',
+                  marginBottom: 10,
+                  flexShrink: 0, // Запрещаем заголовку сжиматься
+                }}
+              >
+                Правила игры
+              </div>
+
+              {/* Скроллируемая область с правилами */}
+              <div
+                style={{
+                  flex: 1,
+                  overflowY: 'auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 20, // Отступ между смысловыми блоками
+                  paddingRight: 4, // Визуальный отступ для скроллбара
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <p style={{ fontWeight: 400, fontSize: 15, lineHeight: '18px', textAlign: 'center', color: '#1C1C1F', margin: 0 }}>
+                    Ежедневно тебе выдается 9 игровых монет. Баланс можно проверить в левом верхнем углу, после старта игры.
+                  </p>
+                  <p style={{ fontWeight: 400, fontSize: 15, lineHeight: '18px', textAlign: 'center', color: '#1C1C1F', margin: 0 }}>
+                    Монеты нужны, чтобы получать места: 1 монета = 1 место. То есть за день ты можешь открыть до 9 мест
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ fontWeight: 500, fontSize: 18, lineHeight: '22px', textAlign: 'center', color: '#1C1C1F' }}>
+                    Выбери настроение
+                  </div>
+                  <p style={{ fontWeight: 400, fontSize: 15, lineHeight: '18px', textAlign: 'center', color: '#1C1C1F', margin: 0 }}>
+                    Твой игровой путь начинается с выбора настроения. Выбери из списка то, которое наиболее откликается тебя сегодня
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ fontWeight: 500, fontSize: 18, lineHeight: '22px', textAlign: 'center', color: '#1C1C1F' }}>
+                    Выбери категории
+                  </div>
+                  <p style={{ fontWeight: 400, fontSize: 15, lineHeight: '18px', textAlign: 'center', color: '#125BEC', margin: 0 }}>
+                    1 выбранная категория = 1 игровая монета<br />= 1 место
+                  </p>
+                  <p style={{ fontWeight: 400, fontSize: 15, lineHeight: '18px', textAlign: 'center', color: '#1C1C1F', margin: 0 }}>
+                    За один раз можно выбрать максимум 3 категории. Выбирай столько категорий, сколько мест хочешь получить прямо сейчас
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ fontWeight: 500, fontSize: 18, lineHeight: '22px', textAlign: 'center', color: '#1C1C1F' }}>
+                    Запусти спиннер
+                  </div>
+                  <p style={{ fontWeight: 400, fontSize: 15, lineHeight: '18px', textAlign: 'center', color: '#1C1C1F', margin: 0 }}>
+                    Используй монеты, чтобы запустить спиннер и получить подборку мест.
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ fontWeight: 500, fontSize: 18, lineHeight: '22px', textAlign: 'center', color: '#1C1C1F' }}>
+                    Монеты закончились?
+                  </div>
+                  <p style={{ fontWeight: 400, fontSize: 15, lineHeight: '18px', textAlign: 'center', color: '#1C1C1F', margin: 0 }}>
+                    Возвращайся завтра: монеты обновятся, а вместе с ними появится новый шанс найти классные места
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ fontWeight: 500, fontSize: 18, lineHeight: '22px', textAlign: 'center', color: '#1C1C1F' }}>
+                    Персонаж недели
+                  </div>
+                  <p style={{ fontWeight: 400, fontSize: 15, lineHeight: '18px', textAlign: 'center', color: '#1C1C1F', margin: 0 }}>
+                    Персонаж недели — это наш виртуальный проводник по городу для тебя.
+                  </p>
+                  <p style={{ fontWeight: 400, fontSize: 15, lineHeight: '18px', textAlign: 'center', color: '#1C1C1F', margin: 0 }}>
+                    Каждую неделю появляется новый персонаж: у него свой характер, стиль, настроение и предпочтения.
+                  </p>
+                  <p style={{ fontWeight: 400, fontSize: 15, lineHeight: '18px', textAlign: 'center', color: '#1C1C1F', margin: 0 }}>
+                    Ты выбираешь, сколько мест хочешь посетить сегодня. Здесь работает та же логика:
+                  </p>
+                  <p style={{ fontWeight: 400, fontSize: 15, lineHeight: '18px', textAlign: 'center', color: '#125BEC', margin: 0 }}>
+                    1 выбранная категория = 1 игровая монета<br />= 1 место
+                  </p>
+                  <p style={{ fontWeight: 400, fontSize: 15, lineHeight: '18px', textAlign: 'center', color: '#1C1C1F', margin: 0 }}>
+                    После этого персонаж предложит тебе маршрут, по которому можно пройтись сегодня.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Внешняя прозрачная кнопка "Назад" */}
+            <button
+              onClick={() => setScreen('start')}
+              style={{
+                width: '100%',
+                height: 54,
+                borderRadius: 40,
+                border: '1px solid #FFFFFF',
+                background: 'transparent',
+                color: '#FFFFFF',
+                fontFamily: 'Inter, sans-serif',
+                fontWeight: 400,
+                fontSize: 16,
+                flexShrink: 0, // Запрещаем кнопке сужаться
+                cursor: 'pointer',
+              }}
+            >
+              Назад
+            </button>
           </div>
         </MobileScreen>
       )}
@@ -873,22 +1038,6 @@ function App() {
               }}
             >
               <button
-                onClick={handleGoToCharacterSetup}
-                style={{
-                  width: '100%',
-                  height: 54,
-                  borderRadius: 40,
-                  border: 'none',
-                  background: '#1C1C1F',
-                  color: '#FFFFFF',
-                  fontSize: 18,
-                  cursor: 'pointer',
-                }}
-              >
-                {selectedCharacter.buttonLabel}
-              </button>
-
-              <button
                 onClick={() => setScreen('start')}
                 style={{
                   width: '100%',
@@ -902,6 +1051,22 @@ function App() {
                 }}
               >
                 Назад
+              </button>
+
+              <button
+                onClick={handleGoToCharacterSetup}
+                style={{
+                  width: '100%',
+                  height: 54,
+                  borderRadius: 40,
+                  border: 'none',
+                  background: '#1C1C1F',
+                  color: '#FFFFFF',
+                  fontSize: 16,
+                  cursor: 'pointer',
+                }}
+              >
+                {selectedCharacter.buttonLabel}
               </button>
             </div>
           </div>
@@ -1098,7 +1263,7 @@ function App() {
                   border: 'none',
                   background: characterPlacesCount >= 1 ? '#1C1C1F' : '#7A7A7A',
                   color: '#FFFFFF',
-                  fontSize: 18,
+                  fontSize: 16,
                   cursor: characterPlacesCount >= 1 ? 'pointer' : 'default',
                 }}
               >
@@ -1229,27 +1394,7 @@ function App() {
                 paddingTop: 12,
               }}
             >
-              <button
-                onClick={() => {
-                  if (!selectedVibe) return
-                  setScreen('categories')
-                }}
-                disabled={!selectedVibe}
-                style={{
-                  width: '100%',
-                  height: 54,
-                  borderRadius: 40,
-                  border: 'none',
-                  background: '#1C1C1F',
-                  color: '#FFFFFF',
-                  fontSize: 18,
-                  opacity: selectedVibe ? 1 : 0.5,
-                  cursor: selectedVibe ? 'pointer' : 'default',
-                }}
-              >
-                Далее
-              </button>
-
+            
               <button
                 onClick={() => setScreen('start')}
                 style={{
@@ -1263,6 +1408,27 @@ function App() {
                 }}
               >
                 Назад
+              </button>
+
+              <button
+                onClick={() => {
+                  if (!selectedVibe) return
+                  setScreen('categories')
+                }}
+                disabled={!selectedVibe}
+                style={{
+                  width: '100%',
+                  height: 54,
+                  borderRadius: 40,
+                  border: 'none',
+                  background: '#1C1C1F',
+                  color: '#FFFFFF',
+                  fontSize: 16,
+                  opacity: selectedVibe ? 1 : 0.5,
+                  cursor: selectedVibe ? 'pointer' : 'default',
+                }}
+              >
+                Далее
               </button>
             </div>
           </div>
@@ -1383,24 +1549,7 @@ function App() {
                   paddingTop: 8,
                   paddingBottom: 0,
                 }}
-              >
-                <button
-                  onClick={handleGoToSpinner}
-                  disabled={selectedCategories.length < 1 || selectedCategories.length > 3}
-                  style={{
-                    width: '100%',
-                    height: 54,
-                    borderRadius: 40,
-                    border: 'none',
-                    background: '#1C1C1F',
-                    color: '#FFFFFF',
-                    fontSize: 18,
-                    opacity: selectedCategories.length >= 1 && selectedCategories.length <= 3 ? 1 : 0.5,
-                    cursor: selectedCategories.length >= 1 && selectedCategories.length <= 3 ? 'pointer' : 'default',
-                  }}
-                >
-                  Далее
-                </button>
+              >                
 
                 <button
                   onClick={() => setScreen('vibe')}
@@ -1415,6 +1564,24 @@ function App() {
                   }}
                 >
                   Назад
+                </button>
+
+                <button
+                  onClick={handleGoToSpinner}
+                  disabled={selectedCategories.length < 1 || selectedCategories.length > 3}
+                  style={{
+                    width: '100%',
+                    height: 54,
+                    borderRadius: 40,
+                    border: 'none',
+                    background: '#1C1C1F',
+                    color: '#FFFFFF',
+                    fontSize: 16,
+                    opacity: selectedCategories.length >= 1 && selectedCategories.length <= 3 ? 1 : 0.5,
+                    cursor: selectedCategories.length >= 1 && selectedCategories.length <= 3 ? 'pointer' : 'default',
+                  }}
+                >
+                  Далее
                 </button>
               </div>
             </div>
@@ -1537,7 +1704,7 @@ function App() {
             <div
               style={{
                 flexShrink: 0,
-                paddingBottom: 8,
+                paddingBottom: 0,
               }}
             >
               {spinErrorMessage && (
@@ -1571,6 +1738,25 @@ function App() {
               </div>
 
               <button
+                onClick={() => setScreen(mode === 'character' ? 'characterSetup' : 'categories')}
+                disabled={isLoading}
+                style={{
+                  width: '100%',
+                  height: 52,
+                  borderRadius: 40,
+                  border: '1px solid #1C1C1F',
+                  background: '#FFFFFF',
+                  color: '#1C1C1F',
+                  fontSize: 16,
+                  opacity: isLoading ? 0.5 : 1,
+                  marginBottom: 10,
+                  cursor: isLoading ? 'default' : 'pointer',
+                }}
+              >
+                Назад
+              </button>
+
+                            <button
                 onClick={handleSpin}
                 disabled={isLoading || !hasEnoughSpinsForCurrentSelection}
                 style={{
@@ -1580,30 +1766,11 @@ function App() {
                   border: 'none',
                   background: isLoading || !hasEnoughSpinsForCurrentSelection ? '#C7C7CC' : '#1C1C1F',
                   color: '#FFFFFF',
-                  fontSize: 18,
-                  marginBottom: 12,
+                  fontSize: 16,
                   cursor: isLoading || !hasEnoughSpinsForCurrentSelection ? 'default' : 'pointer',
                 }}
               >
                 {isLoading ? 'Крутим...' : 'Запустить автомат'}
-              </button>
-
-              <button
-                onClick={() => setScreen(mode === 'character' ? 'characterSetup' : 'categories')}
-                disabled={isLoading}
-                style={{
-                  width: '100%',
-                  height: 54,
-                  borderRadius: 40,
-                  border: '1px solid #1C1C1F',
-                  background: '#FFFFFF',
-                  color: '#1C1C1F',
-                  fontSize: 18,
-                  opacity: isLoading ? 0.5 : 1,
-                  cursor: isLoading ? 'default' : 'pointer',
-                }}
-              >
-                Назад
               </button>
             </div>
           </div>
@@ -1708,6 +1875,22 @@ function App() {
               )}
 
               <button
+                onClick={() => setScreen(mode === 'character' ? 'characterSetup' : 'categories')}
+                style={{
+                  width: '100%',
+                  height: 52,
+                  borderRadius: 40,
+                  border: '1px solid #1C1C1C',
+                  background: '#FFFFFF',
+                  color: '#1C1C1F',
+                  fontSize: 16,
+                  marginBottom: 10,
+                }}
+              >
+                Сменить настройки
+              </button>
+
+              <button
                 onClick={() => {
                   if (!hasEnoughSpinsForCurrentSelection) return
                   setScreen('spinner')
@@ -1720,27 +1903,12 @@ function App() {
                   border: 'none',
                   background: hasEnoughSpinsForCurrentSelection ? '#1C1C1F' : '#C7C7CC',
                   color: '#FFFFFF',
-                  fontSize: 18,
-                  marginBottom: 10,
+                  fontSize: 16,
+                  
                   cursor: hasEnoughSpinsForCurrentSelection ? 'pointer' : 'default',
                 }}
               >
                 Крутить еще
-              </button>
-
-              <button
-                onClick={() => setScreen(mode === 'character' ? 'characterSetup' : 'categories')}
-                style={{
-                  width: '100%',
-                  height: 52,
-                  borderRadius: 40,
-                  border: '1px solid #1C1C1C',
-                  background: '#FFFFFF',
-                  color: '#1C1C1F',
-                  fontSize: 16,
-                }}
-              >
-                Сменить настройки
               </button>
             </div>
           </MobileScreen>
